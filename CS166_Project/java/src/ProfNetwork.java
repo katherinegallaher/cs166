@@ -265,12 +265,14 @@ public class ProfNetwork {
             if (authorisedUser != null) {
               boolean usermenu = true;
               while(usermenu) {
+				ClearScreen();
                 System.out.println("MAIN MENU");
                 System.out.println("---------");
                 System.out.println("1. Goto Friend List");
                 System.out.println("2. Update Profile");
                 System.out.println("3. Write a new message");
                 System.out.println("4. Send Friend Request");
+				System.out.println("5. Display Profile");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
@@ -278,7 +280,7 @@ public class ProfNetwork {
 				   	//FriendList(esql); 
 				   	break;
                    case 2: 
-				   	//UpdateProfile(esql); 
+				   	UpdateProfile(esql,authorisedUser); 
 				   	break;
                    case 3: 
 				   	//NewMessage(esql); 
@@ -286,6 +288,9 @@ public class ProfNetwork {
                    case 4: 
 				   	//SendRequest(esql); 
 				   	break;
+				   case 5:
+				    DisplayProfile(esql, authorisedUser);
+					break;
                    case 9: 
 				   	usermenu = false; 
 				   	break;
@@ -361,7 +366,6 @@ public class ProfNetwork {
          System.err.println (e.getMessage ());
       }
    }//end
-
    /*
     * Check log in credentials for an existing user
     * @return User login or null is the user does not exist
@@ -384,6 +388,152 @@ public class ProfNetwork {
       }
    }//end
 
-// Rest of the functions definition go in here
+   /* 
+   * Clears the screen 
+   * */
+   public static void ClearScreen(){
+	   try{
+		   final String ANSI_CLS = "\u001b[2J";
+		   final String ANSI_HOME = "\u001b[H";
+		   System.out.println(ANSI_CLS + ANSI_HOME);
+		   System.out.flush();
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+   
+   /*
+   * Allows user to update their profile, change their password etc
+   *
+   * */
+   public static void UpdateProfile(ProfNetwork esql, String authorisedUser){
+	   boolean update=true;
+	   while(update) {
+		   ClearScreen();
+		   System.out.println("UPDATE PROFILE MENU");
+           System.out.println("---------");
+           System.out.println("1. Change password");
+           System.out.println("2. Change email");
+           System.out.println("3. Change full name");
+           System.out.println("4. Add work experience");
+		   System.out.println("5. Add education details");
+           System.out.println(".........................");
+           System.out.println("9. End update");
+           switch (readChoice()){
+			   case 1: 
+			    ChangePassword(esql,authorisedUser);
+			   	break;
+               case 2: 
+			    ChangeEmail(esql,authorisedUser);
+				break;
+               case 3: 
+			    ChangeName(esql,authorisedUser);
+				break;
+               case 4:
+			    AddWork(esql,authorisedUser); 
+				break;
+			   case 5:
+			    AddEducation(esql, authorisedUser);
+			    break;
+               case 9: 
+				update = false; 
+				break; default : System.out.println("Unrecognized choice!"); 
+				break;
+           }
+	   }
+   }//end
+
+   public static void ChangePassword(ProfNetwork esql, String authorisedUser){
+	   try{
+	   	System.out.println("Please input your new password:");
+       	String pw = in.readLine();
+	   	String query = String.format("UPDATE USR SET password = '%s' WHERE userId='%s'", pw, authorisedUser); 
+	   	esql.executeUpdate(query);
+	   	System.out.println("Password updated!");
+	   }catch (Exception e){
+			System.err.println (e.getMessage ());
+         	return;
+	   }
+
+   }//end
+
+   public static void ChangeEmail(ProfNetwork esql, String authorisedUser){
+	   try{
+	   	System.out.println("Please input your new email:");
+       	String email = in.readLine();
+	   	String query = String.format("UPDATE USR SET email = '%s' WHERE userId='%s'", email, authorisedUser); 
+	   	esql.executeUpdate(query);
+	   	System.out.println("Email updated!");
+	   }catch (Exception e){
+			System.err.println (e.getMessage ());
+         	return;
+	   }
+   }//end
+
+   public static void ChangeName(ProfNetwork esql, String authorisedUser){
+	   try{
+	   	System.out.println("Please input your new name:");
+       	String name = in.readLine();
+	   	String query = String.format("UPDATE USR SET name = '%s' WHERE userId='%s'", name, authorisedUser); 
+	   	esql.executeUpdate(query);
+	   	System.out.println("Name updated!");
+	   }catch (Exception e){
+			System.err.println (e.getMessage ());
+         	return;
+	   }
+   }//end
+
+   public static void AddWork(ProfNetwork esql, String authorisedUser){
+	   try{
+	     System.out.println("Please enter the company: ");
+		 String comp = in.readLine();
+		 System.out.println("Please enter your role at that company: ");
+		 String rol = in.readLine();
+		 System.out.println("Please enter the location of the company: ");
+		 String loc = in.readLine();
+		 System.out.println("Please enter the startdate in the form of YYYY/MM/DD: ");
+		 String start = in.readLine();
+		 System.out.println("Please enter the end date in the form of YYYY/MM/DD: ");
+		 String end = in.readLine();
+		
+		 String query = String.format("INSERT INTO WORK_EXPR (userId, company, role, location, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, comp, rol, loc, start, end);
+         esql.executeUpdate(query);
+         System.out.println ("Work experience added!!");
+
+	   }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+   }//end
+
+   public static void AddEducation(ProfNetwork esql, String authorisedUser){
+	   try{
+	     System.out.println("Please enter the institution name: ");
+		 String inst = in.readLine();
+		 System.out.println("Please enter your major: ");
+		 String maj = in.readLine();
+		 System.out.println("Please enter your degree: ");
+		 String deg = in.readLine();
+		 System.out.println("Please enter the startdate in the form of YYYY/MM/DD: ");
+		 String start = in.readLine();
+		 System.out.println("Please enter the end date in the form of YYYY/MM/DD: ");
+		 String end = in.readLine();
+		
+		 String query = String.format("INSERT INTO EDUCATION_DETAILS (userId, institutionName, major, degree, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, inst, maj, deg, start, end);
+         esql.executeUpdate(query);
+         System.out.println ("Education experience added!!");
+
+	   }catch(Exception e){
+         System.err.println (e.getMessage ());
+      }
+   }//end
+
+   public static void DisplayUser(ProfNetwork esql, String authorisedUser){
+	   //get all info from USR table for authorised user
+	   //get all info from work_expr table for authorisedUser
+	   //get all info from education_details table for authorisedUser
+	   //Connections???	
+
+   }
+
 
 }//end ProfNetwork
