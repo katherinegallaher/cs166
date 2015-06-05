@@ -273,6 +273,7 @@ public class ProfNetwork {
                 System.out.println("3. Write a new message");
                 System.out.println("4. Send Friend Request");
 				System.out.println("5. Display Profile");
+				System.out.println("6. Search for People");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
@@ -290,6 +291,9 @@ public class ProfNetwork {
 				   	break;
 				   case 5:
 				    DisplayProfile(esql, authorisedUser);
+					break;
+				   case 6:
+				    SearchPeople(esql, authorisedUser);
 					break;
                    case 9: 
 				   	usermenu = false; 
@@ -548,6 +552,36 @@ public class ProfNetwork {
       }
    }//end
 
+   /*
+   * Allows the user to search for people on the network. 
+   *
+   * */
+   public static void SearchPeople(ProfNetwork esql, String authorisedUser){
+       try{
+		   System.out.println("Please enter the name of the person you would like to search for: ");
+		   String search = in.readLine();
+
+//can't do this if you're searching by name..... 
+//decide if search by name or login VVVV
+		   if(authorisedUser.equals(search) ){
+			   System.out.println("You cannot search for yourself!");
+		   }
+
+		   else{
+	           String query = String.format("SELECT * FROM USR WHERE name='" +search + "'");
+			   int exists = esql.executeQuery(query);
+			   if(exists >0){
+				   System.out.println("The user exists....add more later");
+	   //do connection/message option <------future functions
+			   }
+			   else{
+				   System.out.println("The user does not exist!");
+			   }
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage());
+	   }
+   }//end
 
    /*
    * Displays the profile of the user.
