@@ -265,7 +265,7 @@ public class ProfNetwork {
             if (authorisedUser != null) {
               boolean usermenu = true;
               while(usermenu) {
-				ClearScreen();
+				//ClearScreen();
                 System.out.println("MAIN MENU");
                 System.out.println("---------");
                 System.out.println("1. Goto Friend List");
@@ -390,6 +390,7 @@ public class ProfNetwork {
 
    /* 
    * Clears the screen 
+   *
    * */
    public static void ClearScreen(){
 	   try{
@@ -409,7 +410,7 @@ public class ProfNetwork {
    public static void UpdateProfile(ProfNetwork esql, String authorisedUser){
 	   boolean update=true;
 	   while(update) {
-		   ClearScreen();
+		   //ClearScreen();
 		   System.out.println("UPDATE PROFILE MENU");
            System.out.println("---------");
            System.out.println("1. Change password");
@@ -418,7 +419,7 @@ public class ProfNetwork {
            System.out.println("4. Add work experience");
 		   System.out.println("5. Add education details");
            System.out.println(".........................");
-           System.out.println("9. End update");
+           System.out.println("6. End update");
            switch (readChoice()){
 			   case 1: 
 			    ChangePassword(esql,authorisedUser);
@@ -435,7 +436,7 @@ public class ProfNetwork {
 			   case 5:
 			    AddEducation(esql, authorisedUser);
 			    break;
-               case 9: 
+               case 6: 
 				update = false; 
 				break; default : System.out.println("Unrecognized choice!"); 
 				break;
@@ -443,6 +444,10 @@ public class ProfNetwork {
 	   }
    }//end
 
+   /*
+   * Allows the user to change their login password.
+   *
+   * */
    public static void ChangePassword(ProfNetwork esql, String authorisedUser){
 	   try{
 	   	System.out.println("Please input your new password:");
@@ -457,6 +462,10 @@ public class ProfNetwork {
 
    }//end
 
+   /*
+   * Allows the user to change their login email.
+   *
+   * */
    public static void ChangeEmail(ProfNetwork esql, String authorisedUser){
 	   try{
 	   	System.out.println("Please input your new email:");
@@ -470,6 +479,10 @@ public class ProfNetwork {
 	   }
    }//end
 
+   /*
+   * Allows the user to change the name associated with their profile.
+   *
+   * */
    public static void ChangeName(ProfNetwork esql, String authorisedUser){
 	   try{
 	   	System.out.println("Please input your new name:");
@@ -483,6 +496,10 @@ public class ProfNetwork {
 	   }
    }//end
 
+   /*
+   * Allows the user to add additional work experience.
+   *
+   * */
    public static void AddWork(ProfNetwork esql, String authorisedUser){
 	   try{
 	     System.out.println("Please enter the company: ");
@@ -505,6 +522,10 @@ public class ProfNetwork {
       }
    }//end
 
+   /*
+   * Allows the user to add additional Education experience.
+   *
+   * */
    public static void AddEducation(ProfNetwork esql, String authorisedUser){
 	   try{
 	     System.out.println("Please enter the institution name: ");
@@ -518,7 +539,7 @@ public class ProfNetwork {
 		 System.out.println("Please enter the end date in the form of YYYY/MM/DD: ");
 		 String end = in.readLine();
 		
-		 String query = String.format("INSERT INTO EDUCATION_DETAILS (userId, institutionName, major, degree, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, inst, maj, deg, start, end);
+		 String query = String.format("INSERT INTO EDUCATIONAL_DETAILS (userId, instituitionName, major, degree, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, inst, maj, deg, start, end);
          esql.executeUpdate(query);
          System.out.println ("Education experience added!!");
 
@@ -527,13 +548,64 @@ public class ProfNetwork {
       }
    }//end
 
-   public static void DisplayUser(ProfNetwork esql, String authorisedUser){
-	   //get all info from USR table for authorised user
-	   //get all info from work_expr table for authorisedUser
-	   //get all info from education_details table for authorisedUser
-	   //Connections???	
 
-   }
+   /*
+   * Displays the profile of the user.
+   * Displays user info, work and education experience. 
+   * */
+   public static void DisplayProfile(ProfNetwork esql, String authorisedUser){
+
+	   String query = String.format("SELECT email, name, dateOfBirth FROM USR WHERE userId='" +authorisedUser + "'");
+	   List<List<String> > usrInfo = new ArrayList<List<String> >();
+	   try{
+		   System.out.println("\n");
+		   usrInfo = esql.executeQueryAndReturnResult(query);
+	   	   System.out.println("Name: " + usrInfo.get(0).get(1) + "");
+	   	   System.out.println("Email: " + usrInfo.get(0).get(0) + "");
+	       System.out.println("Date of Birth: " + usrInfo.get(0).get(2) + "");
+	       System.out.println("\n");
+	   }catch(Exception e){
+		   System.err.println(e.getMessage());
+	   }
+
+	   query = String.format("SELECT company, role, location, startdate, enddate FROM WORK_EXPR WHERE userId='" + authorisedUser + "'");
+	   List<List<String> > workInfo = new ArrayList<List<String> >();
+	   try{
+		   workInfo = esql.executeQueryAndReturnResult(query);
+	       if(!workInfo.isEmpty()){
+			   System.out.println("Work Experience: ");
+		       for(int i=0; i<workInfo.size(); i++){
+				   System.out.println("Company: " + workInfo.get(i).get(0) + "");
+			       System.out.println("Role: " + workInfo.get(i).get(1) + "");
+			       System.out.println("Location: " + workInfo.get(i).get(2) +"");
+			       System.out.println("Start Date: " + workInfo.get(i).get(3) +"");
+			       System.out.println("End Date: " + workInfo.get(i).get(4) +"");
+			       System.out.println("\n");
+			   }
+	      }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage());
+	   }
+
+	   query = String.format("SELECT instituitionName, major, degree, startdate, enddate FROM EDUCATIONAL_DETAILS WHERE userId='" + authorisedUser + "'");
+	   List<List<String> > eduInfo = new ArrayList<List<String> >();
+	   try{
+		   eduInfo = esql.executeQueryAndReturnResult(query);
+	       if(!eduInfo.isEmpty()){
+			   System.out.println("Education Experience: ");
+			   for(int i=0; i<eduInfo.size(); i++){
+				   System.out.println("institutionName: " + eduInfo.get(i).get(0) + "");
+				   System.out.println("Major: " + eduInfo.get(i).get(1) + "");
+				   System.out.println("Degree: " + eduInfo.get(i).get(2) + "");
+				   System.out.println("Start Date: " + eduInfo.get(i).get(3) + "");
+				   System.out.println("End Date: " + eduInfo.get(i).get(4) + "");
+				   System.out.println("\n");
+			   }
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage());
+	   }
+   }//end
 
 
 }//end ProfNetwork
