@@ -278,6 +278,7 @@ public class ProfNetwork {
 				System.out.println("5. Display Profile");
 				System.out.println("6. Search for People");
 				System.out.println("7. View/Edit Messages");
+				System.out.println("8. View/Reject Connection Requests");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
@@ -301,6 +302,9 @@ public class ProfNetwork {
 					break;
 				   case 7:
 				    Messages(esql, authorisedUser);
+					break;
+				   case 8:
+				    Connections(esql, authorisedUser);
 					break;
                    case 9: 
 				   	usermenu = false; 
@@ -560,12 +564,12 @@ public class ProfNetwork {
    }//end
 
    /*
-   * Allows the user to search for people on the network. 
+   * Allows the user to search for people on the network and go to their profile 
    *
    * */
    public static void SearchPeople(ProfNetwork esql, String authorisedUser){
        try{
-		   System.out.println("Please enter the name of the person you would like to search for: ");
+		   System.out.print("Please enter the userId of the person you would like to search for: ");
 		   String search = in.readLine();
 
 		   if(authorisedUser.equals(search) ){
@@ -573,11 +577,12 @@ public class ProfNetwork {
 		   }
 
 		   else{
-	           String query = String.format("SELECT * FROM USR WHERE name='" +search + "'");
+	           String query = String.format("SELECT * FROM USR WHERE userId='" +search + "'");
 			   int exists = esql.executeQuery(query);
-			   if(exists >0){
-				   System.out.println("The user exists....add more later");
-	   //do connection/message option <------future functions
+			   if(exists != 0){//user found
+				   System.out.println("The user exists....going to profile");
+				   DisplayProfile(esql, search);
+				   OptionMenu(esql, authorisedUser, search);
 			   }
 			   else{
 				   System.out.println("The user does not exist!");
@@ -636,7 +641,7 @@ public class ProfNetwork {
 
 			   switch(readChoice() ){
 				   case 1:
-				    //SendConnection();
+				    SendConnection(esql, authorisedUser, friendUser);
 				    break;
 				   case 2:
 				    SendMessage(esql, authorisedUser, friendUser);
@@ -652,9 +657,25 @@ public class ProfNetwork {
 		   System.err.println(e.getMessage() );
 	   }
    }//end
+	
+	
+   /*
+   * Send a connection request from authorisedUser to friendUser
+   *
+   * */
+   public static void SendConnection(ProfNetwork esql, String authorisedUser, String friendUser){
+	   try{
+		   String query = String.format("INSERT INTO CONNECTION_USR(userId, connectionId, status) VALUES('%s', '%s', 'Request')", authorisedUser, friendUser);
+		   esql.executeUpdate(query);
+		   System.out.println("Connection Request Sent!");
+
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
 
    /*
-   * 
+   * Sends message from authorisedUser to friendUser 
    *
    * */
    public static void SendMessage(ProfNetwork esql, String authorisedUser, String friendUser){
@@ -736,6 +757,74 @@ public class ProfNetwork {
 				    break;
                }//end switch
 		   }//end while
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+   
+   /*
+   * Connections menu, asks you if you want to accept or deny requests
+   *
+   * */
+   public static void Connections(ProfNetwork esql, String authorisedUser){
+	   try{
+		   boolean connectionsMenu = true;
+     	   String query = String.format("SELECT userId FROM CONNECTION_USR WHERE connectionId='" +authorisedUser + "' AND status = 'Request'"); 
+		   System.out.println("\nYour Connection Requests: \n");
+	       List<List<String> > requests = new ArrayList<List<String> >();
+
+		   while(connectionsMenu){
+			   requests = esql.executeQueryAndReturnResult(query);
+			   
+			   int i=0;
+		       for(; i<requests.size(); i++){
+				   System.out.println(i+1 + ". " + requests.get(i).get(0) );
+			       
+		   	   }
+			   System.out.println( (i+1) + ". Go back");
+		       System.out.println("\n");
+			   
+			   int choice = readChoice();
+			   if(choice == (i+1)){
+				   connectionsMenu = false;
+			   }
+			   else{
+				   AcceptDenyConnection(esql, authorisedUser, requests.get(choice-1).get(0));
+			   }//end else
+			   
+		   }//end while
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+   
+
+   public static void AcceptDenyConnection(ProfNetwork esql, String authorisedUser, String con){
+	   try{
+		   boolean editrequest = true;
+		   System.out.println("\n");
+		   while(editrequest){
+			   System.out.println("1. Accept Request");
+			   System.out.println("2. Deny Request");
+			   System.out.println("3. Return to your connection requests");
+
+			   switch(readChoice() ){
+				   case 1:
+                     String query = String.format("UPDATE CONNECTION_USR SET status = 'Accept' WHERE userid = '" + con + "' AND connectionId = '" + authorisedUser + "'");
+					 esql.executeUpdate(query);
+					 break;
+					case 2:
+                     String nquery = String.format("UPDATE CONNECTION_USR SET status = 'Reject' WHERE userid = '" + con + "' AND connectionId = '" + authorisedUser + "'");
+					 esql.executeUpdate(nquery);
+					 break;
+					case 3:
+					 editrequest=false;
+					 break;
+					default : System.out.println("Unrecognized choice!"); break;
+				   }//end switch
+		   }//end while
+		   System.out.println("\n");
+
 	   }catch(Exception e){
 		   System.err.println(e.getMessage() );
 	   }
