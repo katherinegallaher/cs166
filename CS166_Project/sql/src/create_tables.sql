@@ -38,7 +38,7 @@ CREATE TABLE MESSAGE(
 	senderId varchar(255) NOT NULL,
 	receiverId varchar(255) NOT NULL,
 	contents varchar(500) NOT NULL,
-	sendTime timestamp default current_timestamp,
+	sendTime timestamp, 
 	deleteStatus integer,
 	status varchar(30) NOT NULL,
 	PRIMARY KEY(msgId),
@@ -50,6 +50,7 @@ CREATE TABLE CONNECTION_USR(
 	connectionId varchar(255) NOT NULL, 
 	status varchar(30) NOT NULL,
 	PRIMARY KEY(userId,connectionId),
-	FOREIGN KEY(userId) REFERENCES USR(userId));
+	FOREIGN KEY(userId) REFERENCES USR(userId),
+    FOREIGN KEY(connectionId) REFERENCES USR(userId));
 
 

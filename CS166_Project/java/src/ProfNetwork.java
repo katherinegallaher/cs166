@@ -34,6 +34,9 @@ public class ProfNetwork {
    // reference to physical database connection.
    private Connection _connection = null;
 
+
+   static private int messagenum = 27812;
+
    // handling the keyboard inputs through a BufferedReader
    // This variable can be global for convenience.
    static BufferedReader in = new BufferedReader(
@@ -274,11 +277,12 @@ public class ProfNetwork {
                 System.out.println("4. Send Friend Request");
 				System.out.println("5. Display Profile");
 				System.out.println("6. Search for People");
+				System.out.println("7. View/Edit Messages");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
                    case 1: 
-				   	//FriendList(esql); 
+				   	FriendList(esql,authorisedUser); 
 				   	break;
                    case 2: 
 				   	UpdateProfile(esql,authorisedUser); 
@@ -294,6 +298,9 @@ public class ProfNetwork {
 					break;
 				   case 6:
 				    SearchPeople(esql, authorisedUser);
+					break;
+				   case 7:
+				    Messages(esql, authorisedUser);
 					break;
                    case 9: 
 				   	usermenu = false; 
@@ -444,7 +451,7 @@ public class ProfNetwork {
 				update = false; 
 				break; default : System.out.println("Unrecognized choice!"); 
 				break;
-           }
+           }//end switch
 	   }
    }//end
 
@@ -561,8 +568,6 @@ public class ProfNetwork {
 		   System.out.println("Please enter the name of the person you would like to search for: ");
 		   String search = in.readLine();
 
-//can't do this if you're searching by name..... 
-//decide if search by name or login VVVV
 		   if(authorisedUser.equals(search) ){
 			   System.out.println("You cannot search for yourself!");
 		   }
@@ -580,6 +585,277 @@ public class ProfNetwork {
 		   }
 	   }catch(Exception e){
 		   System.err.println(e.getMessage());
+	   }
+   }//end
+
+   /* 
+   * View friends list with option to go to their profile
+   *
+   * */
+   public static void FriendList(ProfNetwork esql, String authorisedUser){
+	   try{
+		   List<String> FriendsList = new ArrayList<String>();
+		   FriendsList = getFriendsList(esql, authorisedUser);
+
+		   boolean viewfriends = true;
+		   while(viewfriends){
+			   System.out.println("\nYour Friends List: ");
+		       int i=0;
+		       for(; i<FriendsList.size(); i++){
+				   System.out.println(( i+1) + ". " + FriendsList.get(i));
+		       }
+		       System.out.println( (i+1) + ". Go back");
+		       System.out.println("\n");
+			   
+			   int choice = readChoice();
+			   if(choice == (i+1)){
+				   viewfriends = false;
+			   }
+			   else{//they have chosen to view a profile, display it
+				   DisplayProfile(esql,FriendsList.get(choice-1));
+				   OptionMenu(esql,authorisedUser, FriendsList.get(choice-1));
+			   }
+		   }//end while
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+
+   /*
+   * Option menu when you are on someone's profile
+   *
+   * */
+   public static void OptionMenu(ProfNetwork esql, String authorisedUser, String friendUser){
+	   try{
+		   //switch statement, 1. send connection 2. send message?
+		   boolean optionmenu = true;
+		   while(optionmenu){
+			   System.out.println("1. Send Connection");
+			   System.out.println("2. Send Message");
+			   System.out.println("3. Go Back");
+
+			   switch(readChoice() ){
+				   case 1:
+				    //SendConnection();
+				    break;
+				   case 2:
+				    SendMessage(esql, authorisedUser, friendUser);
+				    break;
+				   case 3:
+				    optionmenu=false;
+				    break;
+				   default : System.out.println("Unrecognized choice!"); 
+				    break;
+			   }
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+
+   /*
+   * 
+   *
+   * */
+   public static void SendMessage(ProfNetwork esql, String authorisedUser, String friendUser){
+	   try{
+		   System.out.println("\n");
+		   System.out.println("Please enter your message contents: ");
+		   String msgcontent = in.readLine();
+		   if(msgcontent.length() > 500){
+			   System.out.println("Message is too long.");
+		   }
+		   else{
+			   String query = String.format("INSERT INTO MESSAGE (msgId, senderId, receiverId, contents, sendTime,deleteStatus, status) VALUES ('%d', '%s', '%s', '%s', '%s', '%d', '%s')", messagenum, authorisedUser, friendUser, msgcontent, "1992-06-02 10:30:12 -0700", 0, "Delivered" );
+			   messagenum++;
+			   esql.executeUpdate(query);
+			   System.out.println("Message Sent!");
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+
+   }//end
+
+   /*
+   * Returns the friends list for authorisedUser
+   *
+   * */
+   public static List<String> getFriendsList(ProfNetwork esql, String authorisedUser){
+	   try{
+		   List<String> FriendsList = new ArrayList<String>();
+	       String query = String.format("SELECT connectionId FROM CONNECTION_USR WHERE userId='" + authorisedUser +"' AND status = 'Accept'");
+	       List<List<String> > friends = new ArrayList<List<String> >();
+	       friends = esql.executeQueryAndReturnResult(query);
+	       for(int i=0; i<friends.size();i++){
+		      FriendsList.add(friends.get(i).get(0));
+	       }
+		   
+	       query = String.format("SELECT userId FROM CONNECTION_USR WHERE connectionId='" + authorisedUser +"' AND status = 'Accept'");
+	       friends.clear();
+	       friends = esql.executeQueryAndReturnResult(query);
+	       for(int i=0; i<friends.size();i++){
+		       FriendsList.add(friends.get(i).get(0));
+	       }
+	       return FriendsList;
+	   }catch(Exception e){
+		   System.err.println(e.getMessage());
+		   return null;
+	   }
+   }
+
+   /*
+   * Function that allows the user to view and delete their messages
+   *
+   * Messages delete key: neither sender nor receiver has deleted the message: 0
+   *                      sender has deleted the message but not the receiver: 1
+   *					  receiver has deleted the message but not the sender: 2
+   *					  both the sender and the receiver have deleted the msg: 3
+   * */
+   public static void Messages(ProfNetwork esql, String authorisedUser){
+	   try{
+		   boolean messageMenu = true;
+		   while(messageMenu){
+			   System.out.println("\nMessage Menu: \n");
+			   
+			   System.out.println("1. View/read messages");
+			   System.out.println("2. Delete messages");
+			   System.out.println("3. Go back");
+			   
+			   switch (readChoice()){
+				   case 1:
+				    ShowAllMessages(esql, authorisedUser);
+				    break;
+				   case 2:
+				    DeleteMessages(esql, authorisedUser);
+				    break;
+				   case 3:
+				    messageMenu = false; 
+				    break;
+				   default : System.out.println("Unrecognized choice!"); 
+				    break;
+               }//end switch
+		   }//end while
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+
+
+   /* 
+   * Displays all received messages in a menu where you have the option to view the contents
+   *
+   * */
+   public static void ShowAllMessages(ProfNetwork esql, String authorisedUser){
+	   try{
+		   boolean viewmessages = true;
+     	   String query = String.format("SELECT msgId, senderId, sendTime, status FROM MESSAGE WHERE receiverId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
+	       List<List<String> > allMessages = new ArrayList<List<String> >();
+
+		   while(viewmessages){
+	           allMessages = esql.executeQueryAndReturnResult(query);
+			   int i=0;
+		       for(; i<allMessages.size(); i++){
+
+				   System.out.print(i+1 + ". " + allMessages.get(i).get(1) + " " + allMessages.get(i).get(2) + " ");
+			       if(allMessages.get(i).get(3).equals("Delivered"))
+					   System.out.print("Unread");
+			       else
+					   System.out.print("Read");
+				   System.out.print("\n");
+		   	   }
+			   System.out.println( (i+1) + ". Go back");
+		       System.out.println("\n");
+			   
+			   int choice = readChoice();
+			   if(choice == (i+1)){
+				   viewmessages = false;
+			   }
+			   else{//they have chosen to view a message, display it
+				   DisplayMessage(esql,allMessages.get(choice-1).get(0));
+			   }
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+		   System.err.println("error in showallmessages");
+	   }
+   }//end
+
+   /*
+   * Allows the user to delete a message 
+   *
+   * */
+   public static void DeleteMessages(ProfNetwork esql, String authorisedUser){
+	   try{
+		   boolean deletemessages = true;
+		   String query = String.format("SELECT msgId, senderId, sendTime, status, deleteStatus FROM MESSAGE WHERE receiverId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
+	       List<List<String> > delMessages = new ArrayList<List<String> >();
+
+           System.out.print("\n");
+		   System.out.println("DELETE MESSAGE MENU:");
+		   while(deletemessages){
+	           delMessages = esql.executeQueryAndReturnResult(query);
+			   int i=0;
+		       for(; i<delMessages.size(); i++){
+				   System.out.print(i+1 + ". " + delMessages.get(i).get(0) + " " + delMessages.get(i).get(1) + " " + delMessages.get(i).get(2) + " ");
+				   
+			       if(delMessages.get(i).get(3).equals("Delivered"))
+					   System.out.print("Unread");
+			       else
+					   System.out.print("Read");
+				   System.out.print("\n");
+		   	   }
+			   System.out.println( (i+1) + ". Go back");
+		       System.out.println("\n");
+
+			   int choice = readChoice();
+			   if(choice == (i+1)){
+				   deletemessages = false;
+			   }
+			   else{//delete the message
+				   if(delMessages.get(choice-1).get(4).equals("1") ){
+					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '3'");
+					   esql.executeUpdate(nquery);
+				   }
+				   else{
+					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '2'");
+					   esql.executeUpdate(nquery);
+				   }
+			   }//end delete message
+
+		  }//end while
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+	   }
+   }//end
+
+   /* 
+   * Displays the contents of a message 
+   *
+   * */
+   public static void DisplayMessage(ProfNetwork esql, String msId){
+	   try{
+		   while(true){
+			   String query = String.format("SELECT senderId, sendTime, contents FROM MESSAGE WHERE msgId='" +msId +"'");
+	       	   List<List<String> > display = new ArrayList<List<String> >();
+	           display = esql.executeQueryAndReturnResult(query);
+
+		       System.out.println(display.get(0).get(0) + " " + display.get(0).get(1));
+		       System.out.println(display.get(0).get(2) );
+		       System.out.print("\n");
+		   
+		       query = String.format("UPDATE MESSAGE SET status = 'Read' WHERE msgId = '" + msId + "'");
+		       esql.executeUpdate(query);
+
+		       System.out.println("1. Return");
+		       if(readChoice() == 1){
+			      return;
+		       }
+			  
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+		   System.err.println("displaymessage error");
 	   }
    }//end
 
