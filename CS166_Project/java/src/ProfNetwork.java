@@ -273,14 +273,12 @@ public class ProfNetwork {
                 System.out.println("---------");
                 System.out.println("1. Goto Friend List");
                 System.out.println("2. Update Profile");
-                System.out.println("3. Write a new message");
-                System.out.println("4. Send Friend Request");
-				System.out.println("5. Display Profile");
-				System.out.println("6. Search for People");
-				System.out.println("7. View/Edit Messages");
-				System.out.println("8. View/Reject Connection Requests");
+				System.out.println("3. Display Profile");
+				System.out.println("4. Search for People");
+				System.out.println("5. View/Edit Messages");
+				System.out.println("6. View/Reject Connection Requests");
                 System.out.println(".........................");
-                System.out.println("9. Log out");
+                System.out.println("7. Log out");
                 switch (readChoice()){
                    case 1: 
 				   	FriendList(esql,authorisedUser); 
@@ -288,25 +286,19 @@ public class ProfNetwork {
                    case 2: 
 				   	UpdateProfile(esql,authorisedUser); 
 				   	break;
-                   case 3: 
-				   	//NewMessage(esql); 
-				   	break;
-                   case 4: 
-				   	//SendRequest(esql); 
-				   	break;
-				   case 5:
+                   case 3:
 				    DisplayProfile(esql, authorisedUser);
 					break;
-				   case 6:
+				   case 4:
 				    SearchPeople(esql, authorisedUser);
 					break;
-				   case 7:
+				   case 5:
 				    Messages(esql, authorisedUser);
 					break;
-				   case 8:
+				   case 6:
 				    Connections(esql, authorisedUser);
 					break;
-                   case 9: 
+                   case 7: 
 				   	usermenu = false; 
 				   	break;
                    default : 
@@ -641,7 +633,19 @@ public class ProfNetwork {
 
 			   switch(readChoice() ){
 				   case 1:
-				    SendConnection(esql, authorisedUser, friendUser);
+		   			List<String> numFriends = new ArrayList<String>();
+					numFriends = getFriendsList(esql, authorisedUser);
+				    int numconnections = NumberConnections(esql, authorisedUser);
+
+				    if( (numFriends.size() == 0) && (numconnections > 5) && ThreeLevels(esql, authorisedUser, friendUser)){//within 3 levels and at least 5 connections
+						SendConnection(esql, authorisedUser, friendUser);
+					}
+					else if( numconnections < 5){
+						SendConnection(esql, authorisedUser, friendUser);
+					}
+					else{
+						System.out.println("This user is not within three levels of connection!");
+					}
 				    break;
 				   case 2:
 				    SendMessage(esql, authorisedUser, friendUser);
@@ -657,7 +661,62 @@ public class ProfNetwork {
 		   System.err.println(e.getMessage() );
 	   }
    }//end
-	
+
+
+   /*
+   * Tells the number of connection requests sent by authorisedUser
+   *
+   * */
+   public static int NumberConnections(ProfNetwork esql, String authorisedUser ){
+	   try{
+		   String query = String.format("SELECT * FROM CONNECTION_USR WHERE userId = '" + authorisedUser + "' AND status = 'Request'");
+	       List<List<String> > conn = new ArrayList<List<String> >();
+		   conn = esql.executeQueryAndReturnResult(query);
+		   return conn.size(); 
+
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+		   return 0;
+	   }
+   }//end
+
+   /*
+   * Checks if you are within three levels of connection when trying to send a connection
+   *
+   * */
+   public static boolean ThreeLevels(ProfNetwork esql, String authorisedUser, String desiredUser){
+	   try{
+		   List<String> levelone = new ArrayList<String>();
+		   List<String> leveltwo = new ArrayList<String>();
+		   List<String> levelthree = new ArrayList<String>();
+
+		   List<String> allLevels = new ArrayList<String>();
+		   
+		   //this is a list of all of your friends, level one
+		   levelone = getFriendsList(esql, authorisedUser);
+		   allLevels.addAll(levelone);
+
+		   for(int i=0; i<levelone.size(); i++){
+			   leveltwo.addAll(getFriendsList(esql, levelone.get(i)) );
+			   allLevels.addAll(leveltwo);
+
+			   for(int j=0; j<leveltwo.size(); j++){
+				   levelthree.addAll(getFriendsList(esql, leveltwo.get(j)));
+				   allLevels.addAll(levelthree);
+			   }
+		   }
+
+		   if(allLevels.contains(desiredUser) ){
+			   return true;
+		   }
+		   else{
+			   return false;
+		   }
+	   }catch(Exception e){
+		   System.err.println(e.getMessage() );
+		   return false;
+	   }
+   }//end
 	
    /*
    * Send a connection request from authorisedUser to friendUser
