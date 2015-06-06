@@ -253,27 +253,28 @@ public class ProfNetwork {
          boolean keepon = true;
          while(keepon) {
             // These are sample SQL statements
+		    System.out.println("\n");
             System.out.println("MAIN MENU");
             System.out.println("---------");
             System.out.println("1. Create user");
             System.out.println("2. Log in");
-            System.out.println("9. < EXIT");
+            System.out.println("3. < EXIT");
             String authorisedUser = null;
             switch (readChoice()){
                case 1: CreateUser(esql); break;
                case 2: authorisedUser = LogIn(esql); break;
-               case 9: keepon = false; break;
+               case 3: keepon = false; break;
                default : System.out.println("Unrecognized choice!"); break;
             }//end switch
             if (authorisedUser != null) {
               boolean usermenu = true;
               while(usermenu) {
-				//ClearScreen();
+		        System.out.println("\n");
                 System.out.println("MAIN MENU");
                 System.out.println("---------");
-                System.out.println("1. Goto Friend List");
+                System.out.println("1. Go to Friend List");
                 System.out.println("2. Update Profile");
-				System.out.println("3. Display Profile");
+				System.out.println("3. Display Your Profile");
 				System.out.println("4. Search for People");
 				System.out.println("5. View/Edit Messages");
 				System.out.println("6. View/Reject Connection Requests");
@@ -395,21 +396,6 @@ public class ProfNetwork {
       }
    }//end
 
-   /* 
-   * Clears the screen 
-   *
-   * */
-   public static void ClearScreen(){
-	   try{
-		   final String ANSI_CLS = "\u001b[2J";
-		   final String ANSI_HOME = "\u001b[H";
-		   System.out.println(ANSI_CLS + ANSI_HOME);
-		   System.out.flush();
-	   }catch(Exception e){
-		   System.err.println(e.getMessage() );
-	   }
-   }//end
-   
    /*
    * Allows user to update their profile, change their password etc
    *
@@ -417,7 +403,7 @@ public class ProfNetwork {
    public static void UpdateProfile(ProfNetwork esql, String authorisedUser){
 	   boolean update=true;
 	   while(update) {
-		   //ClearScreen();
+		   System.out.println("\n");
 		   System.out.println("UPDATE PROFILE MENU");
            System.out.println("---------");
            System.out.println("1. Change password");
@@ -492,7 +478,7 @@ public class ProfNetwork {
    * */
    public static void ChangeName(ProfNetwork esql, String authorisedUser){
 	   try{
-	   	System.out.println("Please input your new name:");
+	   	System.out.print("Please input your new name: ");
        	String name = in.readLine();
 	   	String query = String.format("UPDATE USR SET name = '%s' WHERE userId='%s'", name, authorisedUser); 
 	   	esql.executeUpdate(query);
@@ -509,16 +495,23 @@ public class ProfNetwork {
    * */
    public static void AddWork(ProfNetwork esql, String authorisedUser){
 	   try{
-	     System.out.println("Please enter the company: ");
+		 System.out.println("\nEnter 'q' at an time to quit addition.\n");
+         
+	     System.out.print("Please enter the company: ");
 		 String comp = in.readLine();
-		 System.out.println("Please enter your role at that company: ");
+		 if(comp.equals("q")) return;
+		 System.out.print("Please enter your role at that company: ");
 		 String rol = in.readLine();
-		 System.out.println("Please enter the location of the company: ");
+		 if(rol.equals("q")) return;
+		 System.out.print("Please enter the location of the company: ");
 		 String loc = in.readLine();
-		 System.out.println("Please enter the startdate in the form of YYYY/MM/DD: ");
+		 if(loc.equals("q")) return;
+		 System.out.print("Please enter the startdate in the form of YYYY/MM/DD: ");
 		 String start = in.readLine();
-		 System.out.println("Please enter the end date in the form of YYYY/MM/DD: ");
+		 if(start.equals("q")) return;
+		 System.out.print("Please enter the end date in the form of YYYY/MM/DD: ");
 		 String end = in.readLine();
+		 if(end.equals("q")) return;
 		
 		 String query = String.format("INSERT INTO WORK_EXPR (userId, company, role, location, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, comp, rol, loc, start, end);
          esql.executeUpdate(query);
@@ -535,16 +528,23 @@ public class ProfNetwork {
    * */
    public static void AddEducation(ProfNetwork esql, String authorisedUser){
 	   try{
-	     System.out.println("Please enter the institution name: ");
+		 System.out.println("\nEnter 'q' at an time to quit addition.\n");
+
+	     System.out.print("Please enter the institution name: ");
 		 String inst = in.readLine();
-		 System.out.println("Please enter your major: ");
+		 if(inst.equals("q")) return;
+		 System.out.print("Please enter your major: ");
 		 String maj = in.readLine();
-		 System.out.println("Please enter your degree: ");
+		 if(maj.equals("q")) return;
+		 System.out.print("Please enter your degree: ");
 		 String deg = in.readLine();
-		 System.out.println("Please enter the startdate in the form of YYYY/MM/DD: ");
+		 if(deg.equals("q")) return;
+		 System.out.print("Please enter the startdate in the form of YYYY/MM/DD: ");
 		 String start = in.readLine();
-		 System.out.println("Please enter the end date in the form of YYYY/MM/DD: ");
+		 if(start.equals("q")) return;
+		 System.out.print("Please enter the end date in the form of YYYY/MM/DD: ");
 		 String end = in.readLine();
+		 if(end.equals("q")) return;
 		
 		 String query = String.format("INSERT INTO EDUCATIONAL_DETAILS (userId, instituitionName, major, degree, startDate, endDate) VALUES ('%s','%s','%s', '%s', '%s', '%s')", authorisedUser, inst, maj, deg, start, end);
          esql.executeUpdate(query);
@@ -596,13 +596,14 @@ public class ProfNetwork {
 
 		   boolean viewfriends = true;
 		   while(viewfriends){
-			   System.out.println("\nYour Friends List: ");
+			   System.out.println("\nYOUR FRIENDS LIST(to view a friend's profile select their number): ");
+               System.out.println("---------");
 		       int i=0;
 		       for(; i<FriendsList.size(); i++){
 				   System.out.println(( i+1) + ". " + FriendsList.get(i));
 		       }
+               System.out.println(".........................");
 		       System.out.println( (i+1) + ". Go back");
-		       System.out.println("\n");
 			   
 			   int choice = readChoice();
 			   if(choice == (i+1)){
@@ -624,11 +625,13 @@ public class ProfNetwork {
    * */
    public static void OptionMenu(ProfNetwork esql, String authorisedUser, String friendUser){
 	   try{
-		   //switch statement, 1. send connection 2. send message?
 		   boolean optionmenu = true;
 		   while(optionmenu){
+			   System.out.println(friendUser + "'S PROFILE MENU");
+           	   System.out.println("---------");
 			   System.out.println("1. Send Connection");
 			   System.out.println("2. Send Message");
+               System.out.println(".........................");
 			   System.out.println("3. Go Back");
 
 			   switch(readChoice() ){
@@ -739,7 +742,8 @@ public class ProfNetwork {
    * */
    public static void SendMessage(ProfNetwork esql, String authorisedUser, String friendUser){
 	   try{
-		   System.out.println("\n");
+		   System.out.println("\nSEND MESSAGE:");
+           System.out.println("---------");
 		   System.out.println("Please enter your message contents: ");
 		   String msgcontent = in.readLine();
 		   if(msgcontent.length() > 500){
@@ -749,7 +753,7 @@ public class ProfNetwork {
 			   String query = String.format("INSERT INTO MESSAGE (msgId, senderId, receiverId, contents, sendTime,deleteStatus, status) VALUES ('%d', '%s', '%s', '%s', '%s', '%d', '%s')", messagenum, authorisedUser, friendUser, msgcontent, "1992-06-02 10:30:12 -0700", 0, "Delivered" );
 			   messagenum++;
 			   esql.executeUpdate(query);
-			   System.out.println("Message Sent!");
+			   System.out.println("Message Sent!\n");
 		   }
 	   }catch(Exception e){
 		   System.err.println(e.getMessage() );
@@ -796,10 +800,12 @@ public class ProfNetwork {
 	   try{
 		   boolean messageMenu = true;
 		   while(messageMenu){
-			   System.out.println("\nMessage Menu: \n");
+			   System.out.println("\nMESSAGE MENU: ");
+               System.out.println("---------");
 			   
 			   System.out.println("1. View/read messages");
 			   System.out.println("2. Delete messages");
+               System.out.println(".........................");
 			   System.out.println("3. Go back");
 			   
 			   switch (readChoice()){
@@ -829,7 +835,9 @@ public class ProfNetwork {
 	   try{
 		   boolean connectionsMenu = true;
      	   String query = String.format("SELECT userId FROM CONNECTION_USR WHERE connectionId='" +authorisedUser + "' AND status = 'Request'"); 
-		   System.out.println("\nYour Connection Requests: \n");
+		   System.out.println("\nYOUR CONNECTION REQUESTS: ");
+           System.out.println("---------");
+
 	       List<List<String> > requests = new ArrayList<List<String> >();
 
 		   while(connectionsMenu){
@@ -840,6 +848,7 @@ public class ProfNetwork {
 				   System.out.println(i+1 + ". " + requests.get(i).get(0) );
 			       
 		   	   }
+               System.out.println(".........................");
 			   System.out.println( (i+1) + ". Go back");
 		       System.out.println("\n");
 			   
@@ -862,9 +871,11 @@ public class ProfNetwork {
 	   try{
 		   boolean editrequest = true;
 		   System.out.println("\n");
+           System.out.println("---------");
 		   while(editrequest){
 			   System.out.println("1. Accept Request");
 			   System.out.println("2. Deny Request");
+               System.out.println(".........................");
 			   System.out.println("3. Return to your connection requests");
 
 			   switch(readChoice() ){
@@ -900,6 +911,11 @@ public class ProfNetwork {
      	   String query = String.format("SELECT msgId, senderId, sendTime, status FROM MESSAGE WHERE receiverId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
 	       List<List<String> > allMessages = new ArrayList<List<String> >();
 
+
+           System.out.println("\nALL MESSAGES: ");
+           System.out.println("---------");
+			   
+
 		   while(viewmessages){
 	           allMessages = esql.executeQueryAndReturnResult(query);
 			   int i=0;
@@ -912,6 +928,7 @@ public class ProfNetwork {
 					   System.out.print("Read");
 				   System.out.print("\n");
 		   	   }
+               System.out.println(".........................");
 			   System.out.println( (i+1) + ". Go back");
 		       System.out.println("\n");
 			   
@@ -941,6 +958,9 @@ public class ProfNetwork {
 
            System.out.print("\n");
 		   System.out.println("DELETE MESSAGE MENU:");
+           System.out.println("---------");
+			   
+
 		   while(deletemessages){
 	           delMessages = esql.executeQueryAndReturnResult(query);
 			   int i=0;
@@ -953,6 +973,7 @@ public class ProfNetwork {
 					   System.out.print("Read");
 				   System.out.print("\n");
 		   	   }
+               System.out.println(".........................");
 			   System.out.println( (i+1) + ". Go back");
 		       System.out.println("\n");
 
@@ -1016,12 +1037,17 @@ public class ProfNetwork {
 	   String query = String.format("SELECT email, name, dateOfBirth FROM USR WHERE userId='" +authorisedUser + "'");
 	   List<List<String> > usrInfo = new ArrayList<List<String> >();
 	   try{
-		   System.out.println("\n");
 		   usrInfo = esql.executeQueryAndReturnResult(query);
-	   	   System.out.println("Name: " + usrInfo.get(0).get(1) + "");
+		   System.out.println("\n");
+		   System.out.println(usrInfo.get(0).get(1) + "'s PROFILE:");
+           System.out.println("---------");
+
+		   if(usrInfo.get(0).get(1) != null)
+			   System.out.println("Name: " + usrInfo.get(0).get(1) + "");
 	   	   System.out.println("Email: " + usrInfo.get(0).get(0) + "");
-	       System.out.println("Date of Birth: " + usrInfo.get(0).get(2) + "");
-	       System.out.println("\n");
+		   if(usrInfo.get(0).get(2) != null )
+			   System.out.println("Date of Birth: " + usrInfo.get(0).get(2) + "");
+           System.out.println("---------");
 	   }catch(Exception e){
 		   System.err.println(e.getMessage());
 	   }
@@ -1033,13 +1059,13 @@ public class ProfNetwork {
 	       if(!workInfo.isEmpty()){
 			   System.out.println("Work Experience: ");
 		       for(int i=0; i<workInfo.size(); i++){
-				   System.out.println("Company: " + workInfo.get(i).get(0) + "");
+				   System.out.println("\nCompany: " + workInfo.get(i).get(0) + "");
 			       System.out.println("Role: " + workInfo.get(i).get(1) + "");
 			       System.out.println("Location: " + workInfo.get(i).get(2) +"");
 			       System.out.println("Start Date: " + workInfo.get(i).get(3) +"");
 			       System.out.println("End Date: " + workInfo.get(i).get(4) +"");
-			       System.out.println("\n");
 			   }
+           	   System.out.println("---------");
 	      }
 	   }catch(Exception e){
 		   System.err.println(e.getMessage());
@@ -1052,13 +1078,13 @@ public class ProfNetwork {
 	       if(!eduInfo.isEmpty()){
 			   System.out.println("Education Experience: ");
 			   for(int i=0; i<eduInfo.size(); i++){
-				   System.out.println("institutionName: " + eduInfo.get(i).get(0) + "");
+				   System.out.println("\nInstitution Name: " + eduInfo.get(i).get(0) + "");
 				   System.out.println("Major: " + eduInfo.get(i).get(1) + "");
 				   System.out.println("Degree: " + eduInfo.get(i).get(2) + "");
 				   System.out.println("Start Date: " + eduInfo.get(i).get(3) + "");
 				   System.out.println("End Date: " + eduInfo.get(i).get(4) + "");
-				   System.out.println("\n");
 			   }
+           	   System.out.println("---------");
 		   }
 	   }catch(Exception e){
 		   System.err.println(e.getMessage());
