@@ -8,6 +8,12 @@
  *
  * Target DBMS: 'Postgres'
  *
+ *
+ * Group Members:
+ * Katherine Gallaher 861100447
+ * Kenneth Mayorga 860989982
+ *
+ * Group #38
  */
 
 
