@@ -640,8 +640,12 @@ public class ProfNetwork {
 					numFriends = getFriendsList(esql, authorisedUser);
 				    int numconnections = NumberConnections(esql, authorisedUser);
 
+					
 				    if( (numFriends.size() == 0) && (numconnections > 5) && ThreeLevels(esql, authorisedUser, friendUser)){//within 3 levels and at least 5 connections
 						SendConnection(esql, authorisedUser, friendUser);
+					}
+					else if(numFriends.contains(friendUser) ){
+						System.out.println("This user is already your friend!");
 					}
 					else if( numconnections < 5){
 						SendConnection(esql, authorisedUser, friendUser);
