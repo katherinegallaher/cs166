@@ -975,7 +975,7 @@ public class ProfNetwork {
 	           delMessages = esql.executeQueryAndReturnResult(query);
 			   int i=0;
 		       for(; i<delMessages.size(); i++){
-				   System.out.print(i+1 + ". " + delMessages.get(i).get(0) + " " + delMessages.get(i).get(1) + " " + delMessages.get(i).get(2) + " ");
+				   System.out.print(i+1 + ". " +  delMessages.get(i).get(1) + " " + delMessages.get(i).get(2) + " ");
 				   
 			       if(delMessages.get(i).get(3).equals("Delivered"))
 					   System.out.print("Unread");
@@ -993,11 +993,11 @@ public class ProfNetwork {
 			   }
 			   else{//delete the message
 				   if(delMessages.get(choice-1).get(4).equals("1") ){
-					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '3'");
+					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '3' WHERE msgId = '" + delMessages.get(choice-1).get(0) + "'");
 					   esql.executeUpdate(nquery);
 				   }
 				   else{
-					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '2'");
+					   String nquery = String.format("UPDATE MESSAGE SET deleteStatus = '2' WHERE msgId = '" + delMessages.get(choice-1).get(0) + "'");
 					   esql.executeUpdate(nquery);
 				   }
 			   }//end delete message
