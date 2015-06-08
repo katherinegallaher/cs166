@@ -921,6 +921,8 @@ public class ProfNetwork {
      	   String query = String.format("SELECT msgId, senderId, sendTime, status FROM MESSAGE WHERE receiverId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
 	       List<List<String> > allMessages = new ArrayList<List<String> >();
 
+     	   String squery = String.format("SELECT msgId, receiverId, sendTime, status FROM MESSAGE WHERE senderId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
+		   List<List<String> > sentMessages = new ArrayList<List<String> >();
 
            System.out.println("\nALL MESSAGES: ");
            System.out.println("---------");
@@ -928,6 +930,10 @@ public class ProfNetwork {
 
 		   while(viewmessages){
 	           allMessages = esql.executeQueryAndReturnResult(query);
+			   sentMessages = esql.executeQueryAndReturnResult(squery);
+
+			   System.out.println("Received Messages:");
+               System.out.println("---------");
 			   int i=0;
 		       for(; i<allMessages.size(); i++){
 
@@ -938,6 +944,22 @@ public class ProfNetwork {
 					   System.out.print("Read");
 				   System.out.print("\n");
 		   	   }
+
+			   allMessages.addAll(sentMessages);
+
+			   System.out.println("Sent Messages:");
+               System.out.println("---------");
+		       for(; i<allMessages.size(); i++){
+
+				   System.out.print(i+1 + ". " + allMessages.get(i).get(1) + " " + allMessages.get(i).get(2) + " ");
+			       if(allMessages.get(i).get(3).equals("Delivered"))
+					   System.out.print("Unread");
+			       else
+					   System.out.print("Read");
+				   System.out.print("\n");
+		   	   }
+
+
                System.out.println(".........................");
 			   System.out.println( (i+1) + ". Go back");
 		       System.out.println("\n");
@@ -947,6 +969,7 @@ public class ProfNetwork {
 				   viewmessages = false;
 			   }
 			   else{//they have chosen to view a message, display it
+
 				   DisplayMessage(esql,allMessages.get(choice-1).get(0));
 			   }
 		   }
@@ -966,23 +989,44 @@ public class ProfNetwork {
 		   String query = String.format("SELECT msgId, senderId, sendTime, status, deleteStatus FROM MESSAGE WHERE receiverId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
 	       List<List<String> > delMessages = new ArrayList<List<String> >();
 
+		   String squery = String.format("SELECT msgId, receiverId, sendTime, status, deleteStatus FROM MESSAGE WHERE senderId='" +authorisedUser + "' AND (deleteStatus <> 2 AND deleteStatus <>3) AND (status <> 'Failed to Deliver' AND status <> 'Draft')");
+		   List<List<String> > sentMessages = new ArrayList<List<String> >();
+
            System.out.print("\n");
 		   System.out.println("DELETE MESSAGE MENU:");
            System.out.println("---------");
-			   
 
 		   while(deletemessages){
 	           delMessages = esql.executeQueryAndReturnResult(query);
+			   sentMessages = esql.executeQueryAndReturnResult(squery);
 			   int i=0;
+			  
+			   System.out.println("Received Messages:");
+               System.out.println("---------");
+
 		       for(; i<delMessages.size(); i++){
 				   System.out.print(i+1 + ". " +  delMessages.get(i).get(1) + " " + delMessages.get(i).get(2) + " ");
 				   
+			       if(delMessages.get(i).get(3).equals("Delivered"))
+					   System.out.print("Unread"); else
+					   System.out.print("Read");
+				   System.out.print("\n");
+		   	   }
+
+			   delMessages.addAll(sentMessages);
+
+			   System.out.println("Sent Messages:");
+               System.out.println("---------");
+		       for(; i<delMessages.size(); i++){
+
+				   System.out.print(i+1 + ". " + delMessages.get(i).get(1) + " " + delMessages.get(i).get(2) + " ");
 			       if(delMessages.get(i).get(3).equals("Delivered"))
 					   System.out.print("Unread");
 			       else
 					   System.out.print("Read");
 				   System.out.print("\n");
 		   	   }
+
                System.out.println(".........................");
 			   System.out.println( (i+1) + ". Go back");
 		       System.out.println("\n");
@@ -1005,6 +1049,7 @@ public class ProfNetwork {
 		  }//end while
 	   }catch(Exception e){
 		   System.err.println(e.getMessage() );
+		   System.out.println("error in delete message");
 	   }
    }//end
 
